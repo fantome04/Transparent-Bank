@@ -175,9 +175,6 @@ int main()
         exit(errno);
     }
 
-    const int n = 10;
-
-
     int shm_fd = shm_open(shm_name, O_RDWR, 0666);
     if(shm_fd == -1)
     {

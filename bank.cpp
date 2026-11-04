@@ -1,73 +1,53 @@
 #include "bank.h"
 #include <iostream>
 
-int Bank::get_cell_curr_balance(int num) const {
+std::string Bank::freeze_cell(int num) {
     if(num < 0 || num >= bankSize) {
-        return -1;
-    }
-
-    return cells[num].get_curr_balance();
-}
-
-int Bank::get_cell_min_balance(int num) const {
-    if(num < 0 || num >= bankSize) {
-        return -1;
-    }
-
-    return cells[num].get_min_balance();
-}
-
-int Bank::get_cell_max_balance(int num) const {
-    if(num < 0 || num >= bankSize) {
-        return -1;
-    }
-
-    return cells[num].get_max_balance();
-}
-
-bool Bank::freeze_cell(int num) {
-    if(num < 0 || num >= bankSize) {
-        return false;
+        return "invalid index";
     }
 
     cells[num].freeze();
 
-    return true;
+    return "Cell number" + std::to_string(num + 1) + "successfully frozen";
 }
 
-bool Bank::unfreeze_cell(int num) {
+std::string Bank::unfreeze_cell(int num) {
     if(num < 0 || num >= bankSize) {
-        return false;
+        return "invalid index";
     }
 
     cells[num].unfreeze();
 
-    return true;
+    return "Cell number" + std::to_string(num + 1) + "successfully unfrozen";
 }
 
-bool Bank::transfer(int a, int b, int amount) {
-    if(a < 0 || a >= bankSize || b < 0 || b >= bankSize || amount < 0) {
-        return false;
+std::string Bank::transfer(int a, int b, int amount) {
+    if(a < 0 || a >= bankSize || b < 0 || b >= bankSize) {
+        return "invalid index";
+    }
+
+    if(amount < 0) {
+        return "invalid amount";
     }
 
     if(cells[a].is_frozen() || cells[b].is_frozen()) {
-        return false;
+        return "one of the cells is frozen";
     }
 
     if(cells[a].send_amount(amount)) {
         if(cells[b].receive_amount(amount)) {
-            return true;
+            return "successfully transferred";
         }
 
         cells[a].receive_amount(amount);
     }
 
-    return false;
+    return "one of the cells is unable to complete the operation";
 }
 
-bool Bank::add_to_all(int amount) {
+std::string Bank::add_to_all(int amount) {
     if(amount < 0) {
-        return false;
+        return "invalid amount";
     }
 
     int index = 0;
@@ -77,16 +57,16 @@ bool Bank::add_to_all(int amount) {
                 cells[i].send_amount(amount);
             }
 
-            return false;
+            return "one of the cells is unable to complete the operation";
         }
     }
 
-    return true;
+    return "successfully added";
 }
 
-bool Bank::sub_from_all(int amount) {
+std::string Bank::sub_from_all(int amount) {
     if(amount < 0) {
-        return false;
+        return "invalid amount";
     }
 
     int index = 0;
@@ -96,39 +76,58 @@ bool Bank::sub_from_all(int amount) {
                 cells[i].receive_amount(amount);
             }
 
-            return false;
+            return "one of the cells is unable to complete the operation";
         }
     }
 
-    return true;
+    return "successfully subed";
 }
 
-bool Bank::set_cell_min_amount(int num, int amount) {
+std::string Bank::set_cell_min_amount(int num, int amount) {
     if(num < 0 || num >= bankSize) {
-        return false;
+        return "invalid index";
     }
 
     if(amount > cells[num].get_curr_balance() || amount >= cells[num].get_max_balance() || cells[num].is_frozen()) {
-        return false;
+        return "invalid amount";
     }
 
     cells[num].set_min_amount(amount);
 
-    return true;
+    return "successfully changes the min amount";
 }
 
-bool Bank::set_cell_max_amount(int num, int amount) {
+std::string Bank::set_cell_max_amount(int num, int amount) {
     if(num < 0 || num >= bankSize) {
-        return false;
+        return "invalid index";
     }
 
     if(amount < cells[num].get_curr_balance() || amount <= cells[num].get_min_balance() || cells[num].is_frozen()) {
-        return false;
+        return "invalid amount";
     }
 
     cells[num].set_max_amount(amount);
 
-    return true;
+    return "successfully changes the max amount";}
+
+std::string Bank::get_info(int num) {
+    if(num < 0 || num >= bankSize) {
+        return "";
+    }
+
+    std::string res = "curr: ";
+    res = res + std::to_string(cells[num].get_curr_balance()) + " | min: ";
+    res = res + std::to_string(cells[num].get_min_balance()) + " | max: ";
+    res = res + std::to_string(cells[num].get_max_balance()) + " | frozen: ";
+
+    if(cells[num].is_frozen()) {
+        res += "true";
+    }
+    else {
+        res += "false";
+    }
+
+    return res;
 }
 
 BankCell& Bank::operator[](unsigned int ind)
